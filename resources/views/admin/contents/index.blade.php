@@ -37,6 +37,7 @@
                 <th>Tiêu Đề</th>
                 <th>Ngày Đăng</th>
                 <th>Nguồn Tin</th>
+                <th>Phản Động</th>
                 <th>Active</th>
                 <th>Edit</th>
               </tr>
@@ -48,6 +49,7 @@
                 <th>Tiêu Đề</th>
                 <th>Ngày Đăng</th>
                 <th>Nguồn Tin</th>
+                <th>Phản Động</th>
                 <th>Active</th>
                 <th>Edit</th>
               </tr>
@@ -60,6 +62,7 @@
                 <td>{!!$data->title!!}</td>
                 <td>{{$data->pubDate}}</td>
                 <td>{{ $data->sourceOfNews }}</td>
+                <td>{{$data->category->id == 1 ? 'Có' : 'Không'}}</td>
                 <td>
                   <label><input type="checkbox" class="tdCbActive" value="{{ $data->id }}" {{$data->active ? 'checked="checked' : '' }}"><span>{{ $data->active ? ' Yes' : ' No' }}</span></label>
                 </td>

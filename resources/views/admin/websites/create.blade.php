@@ -6,28 +6,32 @@
 <h1 >Create </h1>
 <hr>
 <div class="form-group">
-{{ Form::label('domainName','DomainName')}}
-{{ Form::text('domainName',null, ['class'=>'form-control', 'required' => 'required']) }}
+  {{ Form::label('category_id','Phản Động: ')}}
+  {{ Form::checkbox('category_id',1 , false) }}
+</div>
+<div class="form-group">
+  {{ Form::label('domainName','DomainName')}}
+  {{ Form::text('domainName',null, ['class'=>'form-control', 'required' => 'required']) }}
 </div>  
 <div class="form-group">
-{{ Form::label('menuTag','MenuTag ')}} 
-{{ Form::text('menuTag',null,['class'=>'form-control', 'required' => 'required'])}}
+  {{ Form::label('menuTag','MenuTag ')}} 
+  {{ Form::text('menuTag',null,['class'=>'form-control', 'required' => 'required'])}}
 </div>
 <div class="form-group">
-{{form::label('numberPage','NumberPage')}}
-{{form::number('numberPage', 5,['class'=>'form-control', 'required' => 'required'])}}
+  {{form::label('numberPage','NumberPage')}}
+  {{form::number('numberPage', 5,['class'=>'form-control', 'required' => 'required'])}}
 </div>
 <div class="form-group">
-{{form::label('limitOfOnePage','LimitOfOnePage:')}}
-{{form::number('limitOfOnePage', 0,['class'=>'form-control', 'required' => 'required'])}}
+  {{form::label('limitOfOnePage','LimitOfOnePage:')}}
+  {{form::number('limitOfOnePage', 0,['class'=>'form-control', 'required' => 'required'])}}
 </div>
 <div class="form-group">
-{{form::label('stringFirstPage','StringFirstPage:')}}
-{{form::text('stringFirstPage',null,['class'=>'form-control', 'required' => 'required'])}}
+  {{form::label('stringFirstPage','StringFirstPage:')}}
+  {{form::text('stringFirstPage',null,['class'=>'form-control', 'required' => 'required'])}}
 </div>
 <div class="form-group">
-{{form::label('stringLastPage','StringLastPage:')}}
-{{form::text('stringLastPage',null,['class'=>'form-control'])}}
+  {{form::label('stringLastPage','StringLastPage:')}}
+  {{form::text('stringLastPage',null,['class'=>'form-control'])}}
 </div>
 <div class="form-group">
   {{Form::label('ignoreWebsite','Bỏ Qua Các Đường Dẫn ( Không bắt buộc ):')}}

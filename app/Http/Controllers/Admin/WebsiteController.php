@@ -92,11 +92,11 @@ class WebsiteController extends Controller
     public function update(Request $request, $id)
     {
         //
-
         $webupdate = website::findOrFail($id);
-
         $webupdate->fill($request->all());
-
+        if (!isset($request->category_id)) {
+            $webupdate->category_id = null;
+        }
         $webupdate->save();
         return redirect()->route('website.index');
     }

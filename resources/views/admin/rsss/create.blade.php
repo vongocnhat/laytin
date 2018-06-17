@@ -12,6 +12,10 @@
     </div>
   </div>
   <div class="form-group">
+    {{ Form::label('category_id','Phản Động: ')}}
+    {{ Form::checkbox('category_id',1 , false) }}
+  </div>
+  <div class="form-group">
     {{Form::label('link','Đường Dẫn RSS:')}}
     {{Form::text('link', null, ['class'=>'form-control', 'required'])}}
   </div>

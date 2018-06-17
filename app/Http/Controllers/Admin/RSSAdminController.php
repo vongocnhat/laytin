@@ -78,6 +78,9 @@ class RSSAdminController extends Controller
     {
         $rss = rss::findorfail($id);
         $rss->fill($request->all());
+        if (!isset($request->category_id)) {
+            $rss->category_id = null;
+        }
         $rss->save();
         return redirect()->route('rss.index');
 

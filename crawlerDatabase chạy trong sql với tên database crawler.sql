@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 17, 2018 at 11:53 AM
+-- Generation Time: Jun 17, 2018 at 07:43 PM
 -- Server version: 10.1.32-MariaDB
 -- PHP Version: 7.2.5
 
@@ -39,8 +39,8 @@ CREATE TABLE `categories` (
 --
 
 INSERT INTO `categories` (`id`, `name`, `description`) VALUES
-(1, 'Category Name 1', NULL),
-(2, 'Category 2', NULL);
+(1, 'Phản Động', NULL),
+(2, 'Tin Tức', NULL);
 
 -- --------------------------------------------------------
 
@@ -80,8 +80,8 @@ CREATE TABLE `detail_websites` (
 --
 
 INSERT INTO `detail_websites` (`id`, `website_id`, `containerTag`, `titleTag`, `descriptionTag`, `pubDateTag`, `active`) VALUES
-(4, 1, '.list_news', '.title_news > a', '.description', NULL, 1),
-(8, 2, '.dot-brdr', '.caption-ucan > h3 > a', '.caption-ucan > p + p', '.date-indo', 1);
+(1, 1, '.list_news', '.title_news > a', '.description', NULL, 1),
+(2, 2, '.dot-brdr', '.caption-ucan > h3 > a', '.caption-ucan > p + p', '.date-indo', 1);
 
 -- --------------------------------------------------------
 
@@ -101,31 +101,8 @@ CREATE TABLE `key_words` (
 --
 
 INSERT INTO `key_words` (`id`, `category_id`, `name`, `active`) VALUES
-(16, 2, 'nam', 1),
-(17, 1, 'nữ', 1),
-(18, 2, 'CICM', 1),
-(19, 1, 'công an', 1),
-(21, 1, 'bị', 1);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `migrations`
---
-
-CREATE TABLE `migrations` (
-  `id` int(10) UNSIGNED NOT NULL,
-  `migration` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `batch` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `migrations`
---
-
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
-(1, '2014_10_12_000000_create_users_table', 1),
-(2, '2014_10_12_100000_create_password_resets_table', 1);
+(1, 2, 'nam', 1),
+(2, 2, 'nữ', 1);
 
 -- --------------------------------------------------------
 
@@ -154,6 +131,7 @@ INSERT INTO `password_resets` (`email`, `token`, `created_at`) VALUES
 
 CREATE TABLE `r_s_s_e_s` (
   `id` int(11) NOT NULL,
+  `category_id` int(11) DEFAULT NULL,
   `link` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `ignoreRSS` text COLLATE utf8mb4_unicode_ci,
   `website` text COLLATE utf8mb4_unicode_ci
@@ -163,9 +141,9 @@ CREATE TABLE `r_s_s_e_s` (
 -- Dumping data for table `r_s_s_e_s`
 --
 
-INSERT INTO `r_s_s_e_s` (`id`, `link`, `ignoreRSS`, `website`) VALUES
-(13, 'https://www.24h.com.vn/guest/RSS/', '//24h.com.vn/upload/rss/euro2016.rss', NULL),
-(14, 'https://vnexpress.net/rss', NULL, 'https://vnexpress.net');
+INSERT INTO `r_s_s_e_s` (`id`, `category_id`, `link`, `ignoreRSS`, `website`) VALUES
+(1, NULL, 'https://www.24h.com.vn/guest/RSS/', '//24h.com.vn/upload/rss/euro2016.rss', NULL),
+(2, NULL, 'https://vnexpress.net/rss', NULL, 'https://vnexpress.net');
 
 -- --------------------------------------------------------
 
@@ -198,6 +176,7 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `remember_token`, `creat
 
 CREATE TABLE `websites` (
   `id` int(11) NOT NULL,
+  `category_id` int(11) DEFAULT NULL,
   `domainName` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
   `menuTag` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `numberPage` int(11) NOT NULL,
@@ -212,9 +191,9 @@ CREATE TABLE `websites` (
 -- Dumping data for table `websites`
 --
 
-INSERT INTO `websites` (`id`, `domainName`, `menuTag`, `numberPage`, `limitOfOnePage`, `stringFirstPage`, `stringLastPage`, `ignoreWebsite`, `active`) VALUES
-(1, 'https://vnexpress.net', '#main_menu > a', 2, 20, '/page/', '.html', NULL, 1),
-(2, 'http://vietnam.ucanews.com/', '.navestyle > li > a', 5, 0, '/page/', NULL, 'http://vietnam.ucanews.com;\r\nhttp://vietnam.ucanews.com/about-us/;\r\nhttp://vietnam.ucanews.com/multimedia/;\r\nhttp://directory.ucanews.com/country/vietnam/34', 1);
+INSERT INTO `websites` (`id`, `category_id`, `domainName`, `menuTag`, `numberPage`, `limitOfOnePage`, `stringFirstPage`, `stringLastPage`, `ignoreWebsite`, `active`) VALUES
+(1, NULL, 'https://vnexpress.net', '#main_menu > a', 2, 20, '/page/', '.html', NULL, 1),
+(2, 1, 'http://vietnam.ucanews.com/', '.navestyle > li > a', 5, 0, '/page/', NULL, 'http://vietnam.ucanews.com;\r\nhttp://vietnam.ucanews.com/about-us/;\r\nhttp://vietnam.ucanews.com/multimedia/;\r\nhttp://directory.ucanews.com/country/vietnam/34', 1);
 
 --
 -- Indexes for dumped tables
@@ -248,12 +227,6 @@ ALTER TABLE `key_words`
   ADD KEY `category_id` (`category_id`);
 
 --
--- Indexes for table `migrations`
---
-ALTER TABLE `migrations`
-  ADD PRIMARY KEY (`id`);
-
---
 -- Indexes for table `password_resets`
 --
 ALTER TABLE `password_resets`
@@ -263,7 +236,8 @@ ALTER TABLE `password_resets`
 -- Indexes for table `r_s_s_e_s`
 --
 ALTER TABLE `r_s_s_e_s`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `category_id` (`category_id`);
 
 --
 -- Indexes for table `users`
@@ -277,7 +251,8 @@ ALTER TABLE `users`
 --
 ALTER TABLE `websites`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `domainname` (`domainName`);
+  ADD UNIQUE KEY `domainname` (`domainName`),
+  ADD KEY `category_id` (`category_id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -299,31 +274,25 @@ ALTER TABLE `contents`
 -- AUTO_INCREMENT for table `detail_websites`
 --
 ALTER TABLE `detail_websites`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `key_words`
 --
 ALTER TABLE `key_words`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
-
---
--- AUTO_INCREMENT for table `migrations`
---
-ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `r_s_s_e_s`
 --
 ALTER TABLE `r_s_s_e_s`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `websites`
@@ -352,6 +321,18 @@ ALTER TABLE `detail_websites`
 --
 ALTER TABLE `key_words`
   ADD CONSTRAINT `key_words_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`);
+
+--
+-- Constraints for table `r_s_s_e_s`
+--
+ALTER TABLE `r_s_s_e_s`
+  ADD CONSTRAINT `r_s_s_e_s_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`);
+
+--
+-- Constraints for table `websites`
+--
+ALTER TABLE `websites`
+  ADD CONSTRAINT `websites_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

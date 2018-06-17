@@ -5,6 +5,10 @@
   <h1 >Update </h1>
   <hr>
   <div class="form-group">
+    {{ Form::label('category_id','Phản Động: ')}}
+    {{ Form::checkbox('category_id',1 , null) }}
+  </div>
+  <div class="form-group">
     {{ Form::label('domainName','DomainName')}}
     {{ Form::text('domainName',null, ['class'=>'form-control', 'required' => 'required']) }}
   </div>  

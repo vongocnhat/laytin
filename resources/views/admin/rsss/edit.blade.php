@@ -1,6 +1,6 @@
 @extends('admin.layouts.default')
 @section('content')
-<h3>Edit RSS</h3>
+<h3 class="col-12">Edit RSS</h3>
 {{-- nhận thông điệp từ controller --}}
 <div>
   @if(Session::has('thongbao'))
@@ -9,12 +9,15 @@
 </div>
 {!! Form::model($rss, ['route' => ['rss.update', 'id' => $rss->id], 'method' => 'put', 'class' => 'col-12']) !!}
   <div class="container-fluid">
-    <h1>Edit RSS</h1><hr>
     <div class="row">
       @if(Session::has('ketqua')) 
           <p class="alert alert-success">{{Session::get('ketqua')}}</p>
       @endif
     </div>
+  </div>
+  <div class="form-group">
+    {{ Form::label('category_id','Phản Động: ')}}
+    {{ Form::checkbox('category_id',1 , null) }}
   </div>
   <div class="form-group">
     {{Form::label('link','Đường Dẫn RSS:')}}

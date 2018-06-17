@@ -47,6 +47,10 @@ class RSSController extends Controller
                 $rssPage = new Crawler();
                 $rssPage->addHtmlContent((string) $response->getBody());
                 $hrefs = $rssPage->filter('a');
+                $category_id = null;
+                if (isset($RSSs->get($index)->category)) {
+                    $category_id = $RSSs->get($index)->category->id;
+                }
                 $hrefInserted = [];
                 for ($i = 0; $i < $hrefs->count(); $i ++) {
                     $checkIgnore = false;
@@ -75,7 +79,7 @@ class RSSController extends Controller
                                 array_push($hrefInserted, $fullHref);
                                 //$baseRSSlink = https://www.24h.com.vn/guest/RSS/;
                                 $baseRSSlink = $RSSs->get($index)->link;
-                                $this->getNewsRSS($fullHref, $contents, $categories, $baseRSSlink);
+                                $this->getNewsRSS($fullHref, $contents, $categories, $baseRSSlink, $category_id);
                             }
                         }
                     }
@@ -99,7 +103,7 @@ class RSSController extends Controller
         return view('admin.rss', compact('refreshTime', 'linkSuccesses', 'linkErrors'));
     }
 
-    private function getNewsRSS($href, $contents, $categories, $baseRSSlink)
+    private function getNewsRSS($href, $contents, $categories, $baseRSSlink, $category_id)
     {
         $client = new GuzzleClient();
         $requests = function () use ($href) {
@@ -107,7 +111,7 @@ class RSSController extends Controller
         };
         $pool = new Pool($client, $requests(), [
             'concurrency' => $this->LoadLimit,
-            'fulfilled' => function ($response, $index) use ($href, $contents, $categories, $baseRSSlink) {
+            'fulfilled' => function ($response, $index) use ($href, $contents, $categories, $baseRSSlink, $category_id) {
                 $str = str_replace('<link>', '<linkHref>', $response->getBody());
                 $str = str_replace('</link>', '</linkHref>', $str);
                 $str = str_replace('<![CDATA[', '', $str);
@@ -116,7 +120,7 @@ class RSSController extends Controller
                 $tempDocument->addHtmlContent($str);
                 if ($tempDocument->count() > 0) {
                     $RSSContent = $tempDocument->html();
-                    $this->saveRSSToDB($RSSContent, $contents, $categories, $href, $baseRSSlink);
+                    $this->saveRSSToDB($RSSContent, $contents, $categories, $href, $baseRSSlink, $category_id);
                     array_push($this->linkSuccesses, $href);
                 } else {
                     $this->hasError = true;
@@ -135,7 +139,7 @@ class RSSController extends Controller
         $promise->wait();
     }
 
-    private function saveRSSToDB($RSSContent, $contents, $categories, $href, $baseRSSlink)
+    private function saveRSSToDB($RSSContent, $contents, $categories, $href, $baseRSSlink, $category_id)
     {
         // table contents
         $title;
@@ -182,21 +186,30 @@ class RSSController extends Controller
             // chỉ lấy tin trong ngày, loại bỏ tin sai ngày
             $tempPubDate = date('Y-m-d', strtotime($pubDate));
             $dateNow = date('Y-m-d');
+            $inserted = in_array($link, $this->listLinkInserted);
             if ($available == false && $tempPubDate == $dateNow && $tempPubDate != '1970-01-01') {
                 foreach ($categories as $key => $category) {
-                    $matchChar = false;
-                    foreach ($category->keyWords as $keyWord) {
-                        if ($keyWord->active)
-                            if ($this->matchChar($title, $keyWord->name)) {
-                                // break keyWords;
-                                $matchChar = true;
-                                break;
-                            }
+                    if ($category->id == 1) {
+                        continue;
                     }
-                    $inserted = in_array($link, $this->listLinkInserted);
+                    $matchChar = false;
+                    if ($category_id == 1) {
+                        $matchChar = true;
+                    } else {
+                        foreach ($category->keyWords as $keyWord) {
+                            if ($keyWord->active) {
+                                if ($this->matchChar($title, $keyWord->name)) {
+                                    // break keyWords;
+                                    $matchChar = true;
+                                    break;
+                                }
+                            }
+                        }
+                        $category_id = $category->id;
+                    }
                     if ($matchChar == true && $inserted == false) {
                         $content = new Content();
-                        $content->category_id = $category->id;
+                        $content->category_id = $category_id;
                         //href rss
                         $content->sourceOfNews = $baseRSSlink;
                         $content->title = $title;
@@ -212,6 +225,9 @@ class RSSController extends Controller
                         $content->pubDate = $pubDateTemp;
                         $content->save();
                         array_push($this->listLinkInserted, $link);
+                    }
+                    if ($category_id == 1) {
+                        break;
                     }
                 }
             }

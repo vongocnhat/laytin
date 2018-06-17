@@ -53,7 +53,7 @@ class CrawlerController extends Controller
         $time1 = date('H:i:s', time());
         echo 'Start: '.$time1.'</br>';
         // lấy dữ liệu từ database
-        $websites = Website::with('detailWebsites')->where('active', 1)->get();
+        $websites = Website::with('detailWebsites', 'category')->where('active', 1)->get();
         foreach ($websites as $key => $website) {
             $this->domainName = $website->domainName;
             $this->menuTag = $website->menuTag;
@@ -149,14 +149,15 @@ class CrawlerController extends Controller
                         }
                         for ($i = 0; $i < $limitOfOnePage; $i++) {
                             $item = $items->eq($i);
-                            $this->getItem($detailWebsite, $website->domainName, $item);
+                            $this->getItem($website, $detailWebsite, $item);
                         }
                     }
                 }
             },
             'rejected' => function ($reason, $index) use ($menuHref) {
                 // this is delivered each failed request
-                echo '<span style="color:red">Không Thể Kết Nối Đến: '.$reason->getMessage().'</span><br>';
+                // dd($reason);
+                echo '<span style="color:red">Không Thể Kết Nối Đến: ' . $reason->getRequest()->getUri()->getHost() . $reason->getRequest()->getUri()->getPath() . '</span><br>';
                 $this->hasError = true;
             },
         ]);
@@ -166,7 +167,7 @@ class CrawlerController extends Controller
         $promise->wait();
     }
 
-    private function getItem($detailWebsite, $domainName, $item)
+    private function getItem($website, $detailWebsite, $item)
     {
         $title = '';
         $link = null;
@@ -192,11 +193,11 @@ class CrawlerController extends Controller
                 }
             }
             //save to db
-            $this->saveNewsToDB($title, $link, $description, $pubDate, $domainName);
+            $this->saveNewsToDB($title, $link, $description, $pubDate, $website);
         }
     }
 
-    private function saveNewsToDB($title, $link, $description, $pubDate, $domainName)
+    private function saveNewsToDB($title, $link, $description, $pubDate, $website)
     {
         //local
         $inserted = in_array($link, $this->listLinkInserted);
@@ -211,19 +212,30 @@ class CrawlerController extends Controller
             //in database
             if ($available == false) {
                 foreach ($this->categories as $key => $category) {
+                    if ($category->id == 1) {
+                        continue;
+                    }
                     $matchChar = false;
-                    foreach ($category->keyWordsActive as $keyWord) {
-                        if ($this->matchChar($title, $keyWord->name)) {
-                            // break keyWords;
+                    $category_id = $category->id;
+                    if (isset($website->category)) {
+                        if ($website->category->id == 1) {
                             $matchChar = true;
-                            break;
+                            $category_id = 1;
+                        }
+                    } else {
+                        foreach ($category->keyWordsActive as $keyWord) {
+                            if ($this->matchChar($title, $keyWord->name)) {
+                                // break keyWords;
+                                $matchChar = true;
+                                break;
+                            }
                         }
                     }
                     if ($matchChar == true) {
                         $content = new Content();
-                        $content->category_id = $category->id;
+                        $content->category_id = $category_id;
                         //href rss
-                        $content->sourceOfNews = $domainName;
+                        $content->sourceOfNews = $website->domainName;
                         $content->title = $title;
                         $content->link = $link;
                         // html_entity_decode to show "" '' / () or {!!!!}
@@ -237,6 +249,9 @@ class CrawlerController extends Controller
                         $content->pubDate = $pubDateTemp;
                         $content->save();
                         array_push($this->listLinkInserted, $link);
+                    }
+                    if ($category_id == 1) {
+                        break;
                     }
                 }
             }

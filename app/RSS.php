@@ -8,7 +8,12 @@ class RSS extends Model
 {
     //
     protected $fillable = [
-        'link', 'ignoreRSS', 'website'
+        'category_id', 'link', 'ignoreRSS', 'website'
     ];
     public $timestamps = false;
+
+    public function category()
+    {
+    	return $this->belongsTo('App\Category');
+    }
 }
