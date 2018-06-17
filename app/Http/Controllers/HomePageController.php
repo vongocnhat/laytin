@@ -50,14 +50,7 @@ class HomePageController extends Controller
     //get detail news
     public function getNews(Request $request) {
         $link = $request->input('href');
-        $content = Content::where('link', $link)->get();
-        foreach ($content as $key => $value) {
-            echo html_entity_decode('<iframe name="iframe1" scrolling="auto" id="iframe1" src="'.$value->link.'" width="100%" style="overflow: hidden; height: -webkit-fill-available" frameborder="0" allowfullscreen>');
-
-            // $client = new \GuzzleHttp\Client();
-            // $res = $client->request('GET', $value->link);
-            // echo $res->getBody();
-        }
+        echo html_entity_decode('<iframe name="iframe1" scrolling="auto" id="iframe1" src="'.$link.'" width="100%" style="overflow: hidden; height: -webkit-fill-available" frameborder="0" allowfullscreen>');
     }
 
     public function changeLink($id) {

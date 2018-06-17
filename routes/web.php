@@ -14,8 +14,8 @@ Route::group(['prefix' => 'admin'], function () {
     Auth::routes();
 });
 // ajax
-Route::get('news', 'HomeController@getNews')->name('getNews');
-Route::get('changeLink/{id}', 'HomeController@changeLink')->name('changeLink');
+Route::get('news', 'HomePageController@getNews')->name('getNews');
+Route::get('changeLink/{id}', 'HomePageController@changeLink')->name('changeLink');
 
 Route::prefix('getnews')->group(function () {
 	Route::get('rss', 'RSSController@index')->name('getRSS');
@@ -47,8 +47,8 @@ Route::namespace('Admin')->middleware('adminMiddleware')->prefix('manage')->grou
 Route::get('categoryCus/{categoryID}', 'CategoryCusController@show')->name('categoryCus.show');
 Auth::routes();
 
-Route::get('/home', 'HomeController@index')->name('home');
+Route::get('/home', 'HomePageController@index')->name('home');
 
 Auth::routes();
 
-Route::get('/home', 'HomeController@index')->name('home');
+Route::get('/home', 'HomePageController@index')->name('home');
