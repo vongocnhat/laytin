@@ -94,8 +94,9 @@ class KeyWordController extends Controller
     public function destroy($id, Request $request)
     {
         $ids = $request->input('idCheckbox');
-        if($ids != null)
+        if($ids != null) {
             KeyWord::whereIn('id', $ids)->delete(); 
+        }
         return back();
     }
 

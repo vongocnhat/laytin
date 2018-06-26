@@ -101,8 +101,9 @@ class DetailWebsiteController extends Controller
     public function destroy($id, Request $request)
     {
         $ids = $request->input('idCheckbox');
-        if($ids != null)
+        if($ids != null) {
             DetailWebsite::whereIn('id', $ids)->delete(); 
+        }
         return back();
     }
 

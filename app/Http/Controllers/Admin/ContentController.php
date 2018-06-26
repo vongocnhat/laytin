@@ -3,10 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use App\Http\Controllers\Controller;
-use Symfony\Component\DomCrawler\Crawler;
-use Excel;
 use App\Content;
 use App\RSS;
 use App\Category;
@@ -20,11 +17,7 @@ class ContentController extends Controller
      */
     public function index(Request $request)
     {
-        $contents = Content::where('active', 1);
-        if (isset($request->fromDate) && isset($request->toDate)) {
-            $contents = $contents->where([['pubDate', '>=', $request->fromDate], ['pubDate', '<=', $request->toDate]]);
-        }
-        $contents = $contents->get();
+        $contents = Content::where('active', 1)->get();
         return view('admin.contents.index',compact('contents'));
     }
 
@@ -102,8 +95,9 @@ class ContentController extends Controller
     public function destroy($id, Request $request)
     {
         $ids = $request->input('idCheckbox');
-        if($ids != null)
+        if($ids != null) {
             Content::whereIn('id', $ids)->delete(); 
+        }
         return back();
     }
 
@@ -120,37 +114,4 @@ class ContentController extends Controller
         return view('admin.contents.exportSetting');
     }
 
-    public function export(Request $request)
-    {
-        $contents = Content::orderByRaw("CASE WHEN DAYNAME(pubDate) IS NOT NULL THEN pubDate END DESC")->orderBy('id', 'DESC')->get(['title', 'description','pubDate', 'sourceOfNews']);
-        $settings = $request->only('widthTitle', 'widthDescription', 'wrapTitle', 'wrapDescription');
-        $description = '';
-        foreach ($contents as $key => $content) {
-            $content->title = html_entity_decode($content->title);
-            $document = new Crawler();
-            $document->addHtmlContent($content->description);
-            if ($document->count() > 0)
-                $description = $document->text();
-            $content->description = html_entity_decode($description);
-            $pubDateTemp = date('H:i:s d/m/Y', strtotime($content->pubDate));
-            if (strtotime($content->pubDate) <= strtotime('1971-01-01')) {
-                $pubDateTemp = $content->pubDate;
-            }
-            $content->pubDate = $pubDateTemp;
-        }
-        Excel::create('contents', function($excel) use($contents, $settings) {
-            $excel->sheet('contents', function($sheet) use($contents, $settings) {
-                $sheet->loadView('admin.exports.content', compact('contents', 'settings'));
-                if ($settings['wrapTitle']) {
-                    $sheet->getStyle('B2:' . 'B' . ($contents->count() + 1))->getAlignment()->setWrapText(true);
-                }
-                if ($settings['wrapDescription']) {
-                    $sheet->getStyle('C2:' . 'C' . ($contents->count() + 1))->getAlignment()->setWrapText(true);
-                }
-                $sheet->setAutoSize([
-                    'A', 'D', 'E'
-                ]);
-            });
-        })->export('xlsx');
-    }
 }

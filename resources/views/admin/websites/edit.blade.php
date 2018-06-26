@@ -14,7 +14,7 @@
   </div>  
   <div class="form-group">
     {{ Form::label('menuTag','MenuTag ')}}
-    {{ Form::text('menuTag',null,['class'=>'form-control', 'required' => 'required'])}}
+    {{ Form::text('menuTag',null,['class'=>'form-control'])}}
   </div>
   <div class="form-group">
     {{form::label('numberPage','NumberPage')}}
@@ -26,7 +26,7 @@
   </div>
   <div class="form-group">
     {{form::label('stringFirstPage','StringFirstPage:')}}
-    {{form::text('stringFirstPage',null,['class'=>'form-control', 'required' => 'required'])}}
+    {{form::text('stringFirstPage',null,['class'=>'form-control'])}}
   </div>
   <div class="form-group">
     {{form::label('stringLastPage','StringLastPage:')}}

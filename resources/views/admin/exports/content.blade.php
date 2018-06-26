@@ -13,8 +13,8 @@
         @foreach($contents as $key => $content)
         <tr>
             <td>{{ $key + 1 }}</td>
-            <td width="{{ $settings['widthTitle'] }}">{{ $content->title }}</td>
-            <td width="{{ $settings['widthDescription'] }}">{{ $content->description }}</td>
+            <td width="50">{{ $content->title }}</td>
+            <td width="50">{{ $content->description }}</td>
             <td>{{ $content->pubDate }}</td>
             <td>{{ $content->sourceOfNews }}</td>
         </tr>

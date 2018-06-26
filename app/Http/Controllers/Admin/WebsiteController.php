@@ -16,7 +16,7 @@ class WebsiteController extends Controller
      */
     public function index()
     {
-         $website_data = website::all();
+         $website_data = website::with('category')->get();
         return view('admin.websites.index',compact('website_data'));
     }
 
@@ -112,8 +112,6 @@ class WebsiteController extends Controller
         $ids = $request->input('idCheckbox');
         if($ids != null)
         {
-            $domainNames = Website::select('domainName')->whereIn('id', $ids)->get();
-            Content::whereIn('domainName', $domainNames)->delete(); 
             Website::whereIn('id', $ids)->delete();
         }
         return back();

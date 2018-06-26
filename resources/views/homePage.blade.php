@@ -1,39 +1,64 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>
+  <title>
   @if (isset($categoryID))
     {{ $categories->find($categoryID)->name }}
   @else
     Tất cả tin tức
   @endif 
   </title>
-	<base href="{{ asset("/") }}">
+  <base href="{{ asset("/") }}">
   <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.css">
+  <link rel="stylesheet" type="text/css" href="vendor/datepicker/css/datepicker.min.css">
   <link rel="stylesheet" type="text/css" href="styles/dialog.css">
   <link rel="stylesheet" type="text/css" href="styles/nhat.css">
 </head>
 <body>
-<img src="images/logo2.jpg" width="100%">
+<header>
+  <img src="images/logo.jpg" class="banner">
+  <div class="banner-text">THỐNG GIÁM SÁT TIN</div>
+</header>
 @include('menu')
 <br>
 <div class="news-container col-12">
-  <div class="col-md-4 col-sm-12">
-    {{ Form::open(['route' => isset($categoryID) ? ['categoryCus.show', $categoryID] : 'homePage', 'method' => 'get', 'class' => 'row']) }}
-      <div class="input-group">
-        {{ Form::search('searchStr', $searchStr, ['class' => 'form-control', 'placeholder'=>'Search for...']) }}
-        <span class="input-group-btn">
-          {{ Form::submit('Tìm', ['class' => 'btn btn-success']) }}
-        </span>
-      </div>
-      Số Lượng Tin Trên 1 Trang:
-      <div class="input-group">
-        {{ Form::number('perPage', Session::get('perPage'), ['class' => 'form-control', 'required']) }}
-        <span class="input-group-btn">
-          {{ Form::submit('OK', ['class' => 'btn btn-success']) }}
-        </span>
-      </div>
-    {{ Form::close() }}
+  <div class="row">
+    <div class="col-12">
+      {{ Form::open(['route' => isset($categoryID) ? ['categoryCus.show', $categoryID] : 'homePage', 'method' => 'get', 'class' => 'row']) }}
+        <div class="col-12">
+          <div class="row">
+            <label class="col-2">Số Lượng Tin Trên 1 Trang:</label>
+            <div class="form-group w-80">
+              {{ Form::number('perPage', Session::get('perPage'), ['class' => 'form-control', 'required']) }}
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-12">
+          <div class="form-group row">
+            {!! Form::label('searchStr', 'Nhập Tiêu Đề Cần Tìm:', ['class' => 'col-4']) !!}
+            {{ Form::search('searchStr', $searchStr, ['class' => 'form-control col-8', 'placeholder'=>'Nhập Tiêu Đề Cần Tìm']) }}
+          </div>
+          <div class="form-group row"> 
+            {!! Form::label('fromDate', 'Từ Ngày:', ['class' => 'col-4']) !!}
+            {!! Form::date('fromDate', Request::get('fromDate'), ['class' => 'form-control col-8']) !!}
+          </div>
+          <div class="form-group row"> 
+            {!! Form::label('toDate', 'Đến Ngày:', ['class' => 'col-4']) !!}
+            {!! Form::date('toDate', Request::get('toDate'), ['class' => 'form-control col-8']) !!}
+          </div>
+        </div>
+        <div class="col-12">
+          {!! Form::submit('Tìm', ['class' => 'btn btn-success']) !!}
+          <a href="{{ isset($categoryID) ? route('categoryCus.show', $categoryID) : route('homePage') }}" class="btn btn-danger">Xóa Tìm Kiếm</a>
+          <input type="submit" name="excel" value="Xuất File Excel" class="btn btn-info">
+        </div>
+      {{ Form::close() }}
+    </div>
+    <div class="col-md-4 col-12">
+      {!! Form::open(['route' => 'content.index', 'method' => 'get', 'class' => 'm-t-b']) !!}
+
+      {!! Form::close() !!}
+    </div>
   </div>
 
   <div class="contents-ajax">
@@ -84,6 +109,7 @@ $( document ).ready(function() {
   $(".news-container").on('click', '.btn-title, .btn-image > a', function(e) {
     e.preventDefault();
     var href = $(this).attr('href');
+    console.log(href);
     $('#loading-indicator').show();
     //get news
     $.ajax({
@@ -115,6 +141,18 @@ $( document ).ready(function() {
   });
   //load news
 });
+</script>
+<script type="text/javascript" src="vendor/datepicker/js/datepicker.min.js" ></script>
+<script type="text/javascript" src="vendor/datepicker/js/datepicker.en.js" ></script>
+<script>
+  $(document).ready(function(){
+    $('input[type="date"]').datepicker({
+        language: 'en',
+        dateFormat: 'yyyy-mm-dd',
+        clearButton: true,
+        autoClose: true,
+    });
+  });
 </script>
 </body>
 </html>

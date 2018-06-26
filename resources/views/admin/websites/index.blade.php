@@ -25,12 +25,14 @@
                 <tr>
                   <th><input type="checkbox" class="parent-checkbox-delete"></th>
                   <th>Id</th>
+                  <th>Thêm Detail Website</th>
                   <th>Domain Name</th>
                   <th>Menu Tag</th>
                   <th>Number Page</th>
                   <th>Limit Of One Page</th>
                   <th>Sting First Page</th>
                   <th>String Last Page</th>
+                  <th>Phản Động</th>
                   <th>Active</th>
                   <th>Edit</th>
                 </tr>
@@ -39,15 +41,16 @@
                 <tr>
                   <th><input type="checkbox" class="parent-checkbox-delete"></th>
                   <th>Id</th>
+                  <th>Thêm Detail Website</th>
                   <th>Domain Name</th>
                   <th>Menu Tag</th>
                   <th>Number Page</th>
                   <th>Limit Of One Page</th>
                   <th>Sting First Page</th>
                   <th>String Last Page</th>
+                  <th>Phản Động</th>
                   <th>Active</th>
                   <th>Edit</th>
-          </td>
                 </tr>
               </tfoot>
               <tbody>
@@ -55,12 +58,14 @@
                 <tr>
                   <td><input type="checkbox" class="checkbox-delete" name="idCheckbox[]" value="{{$data->id}}"></td>
                   <td>{{ $data->id }}</td>
+                  <td><a href="{{ route('detailwebsite.create') . '?website_id=' . $data->id }}" class="btn btn-info">Thêm</a></td>
                   <td>{{ $data->domainName }}</td>
                   <td>{{ $data->menuTag }}</td>
                   <td>{{ $data->numberPage }}</td>
                   <td>{{ $data->limitOfOnePage }}</td>
                   <td>{{ $data->stringFirstPage }}</td>
                   <td>{{ $data->stringLastPage }}</td>
+                  <td>{!! $data['category']['id'] == 1 ? '<span class="text-danger">Có</span>' : 'Không' !!}</td>
                   <td>
                     <label><input type="checkbox" class="tdCbActive" value="{{ $data->id }}" {{$data->active ? 'checked="checked' : '' }}"><span>{{ $data->active ? ' Yes' : ' No' }}</span></label>
                   </td>

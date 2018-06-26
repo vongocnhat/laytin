@@ -89,7 +89,7 @@
     } );
   </script>
   <script type="text/javascript">
-    $('.tdCbActive').click(function() {
+    $('#dataTable tbody').on('change', '.tdCbActive', function() {
       var text = $(this).is(':checked') ? ' Yes' : ' No';
       $(this).siblings('span').text(text);
     });

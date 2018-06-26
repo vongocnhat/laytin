@@ -45,6 +45,8 @@ class CrawlerController extends Controller
     private $categories;
     private $contents;
     private $listLinkInserted = [];
+    private $linkSuccesses = [];
+    private $linkErrors = [];
     public function index()
     {
         $this->categories = Category::with('keyWordsActive')->get();
@@ -68,42 +70,62 @@ class CrawlerController extends Controller
             $pool = new Pool($client, $requests(), [
                 'concurrency' => $this->LoadLimit,
                 'fulfilled' => function ($response, $index) use ($website) {
-                    $document = new Crawler();
-                    $document->addHtmlContent($response->getBody());
-                    $nodes = $document->filter($this->menuTag);
-                    $ignoreWebsites = explode(';', $website->ignoreWebsite);
-                    for ($i=0; $i < $nodes->count(); $i++) { 
-                        $menuHref = $nodes->eq($i)->attr('href');
-                        if(!$this->startWithHtml($menuHref))
-                            $menuHref = $this->domainName.$menuHref;
-                        // lấy danh mục tin tức
-                        $checkIgnore = false;
-                        foreach ($ignoreWebsites as $key => $ignoreWebsite) {
-                            // bỏ tất cả đấu space
-                             // dd($ignoreWebsite);
-                            // echo ($ignoreWebsite == $menuHref);
-                            $ignoreWebsite = trim($ignoreWebsite);
-                            $ignoreWebsite = str_replace('/', '', $ignoreWebsite);
-                            $tempMenuHref = trim($menuHref);
-                            $tempMenuHref = str_replace('/', '', $tempMenuHref);
-                            if ($ignoreWebsite == $tempMenuHref) {
-                                $checkIgnore = true;
-                                break;
+                    if (empty($website->menuTag)) {
+                        $documentUTF8 = $response->getBody();
+                        if (stripos($response->getHeader('content-type')[0], 'iso-8859-1')) {
+                            $documentUTF8 = utf8_encode($response->getBody());
+                        }
+                        $this->getNewsInMenu($documentUTF8, $website, $website->domainName);
+                    } else {
+                        $document = new Crawler();
+                        $documentUTF8 = $response->getBody();
+                        if (stripos($response->getHeader('content-type')[0], 'iso-8859-1')) {
+                            $documentUTF8 = utf8_encode($response->getBody());
+                        }
+                        $document->addHtmlContent($documentUTF8);
+                        $nodes = $document->filter($this->menuTag);
+                        $ignoreWebsites = explode(';', $website->ignoreWebsite);
+
+                        for ($i=0; $i < $nodes->count(); $i++) { 
+                            $menuHref = $nodes->eq($i)->attr('href');
+                            if (empty($menuHref)) {
+                                array_push($this->linkErrors, 'Sai menuTag Của Website: '.$this->domainName.' menuTag Phải Là Thẻ a');
+                            } else {
+                                if(!$this->startWithHtml($menuHref)) {
+                                    //replace // = /
+                                    $startLink = parse_url($this->domainName, PHP_URL_SCHEME) . '://' . parse_url($this->domainName, PHP_URL_HOST);
+                                    $endLink =  '/' . $menuHref;
+                                    $menuHref = $startLink . str_replace('//', '/', $endLink);
+                                }
+                                // lấy danh mục tin tức
+                                $checkIgnore = false;
+                                foreach ($ignoreWebsites as $key => $ignoreWebsite) {
+                                    // bỏ tất cả đấu space
+                                     // dd($ignoreWebsite);
+                                    // echo ($ignoreWebsite == $menuHref);
+                                    $ignoreWebsite = trim($ignoreWebsite);
+                                    $ignoreWebsite = str_replace('/', '', $ignoreWebsite);
+                                    $tempMenuHref = trim($menuHref);
+                                    $tempMenuHref = str_replace('/', '', $tempMenuHref);
+                                    if ($ignoreWebsite == $tempMenuHref) {
+                                        $checkIgnore = true;
+                                        break;
+                                    }
+                                }
+                                if ($checkIgnore == false) {
+                                    $this->getNews($menuHref, $website);
+                                }
+                                // */lấy danh mục tin tức
                             }
                         }
-                        if ($checkIgnore == false) {
-                            echo $menuHref.'</br>';
-                            $this->getNews($menuHref, $website);
-                        }
-                        // */lấy danh mục tin tức
+                        if ($nodes->count() == 0)
+                            echo '<span style="color:red">Sai menuTag Của Website: '.$this->domainName.' menuTag<br></span>';
                     }
-                    if ($nodes->count() == 0)
-                        echo '<span style="color:red">Sai menuTag Của Website: '.$this->domainName.'<br></span>';
                 },
                 'rejected' => function ($reason, $index) {
                     // this is delivered each failed request
-                    echo '<span style="color:red">Không Thể Kết Nối Đến: '.$this->domainName.' Có Thể Do Sai Đường Dẫn</span><br>';
                     $this->hasError = true;
+                    array_push($this->linkErrors, 'Không Thể Kết Nối Đến: '.$this->domainName.' Có Thể Do Sai Đường Dẫn');
                 },
             ]);
             // Initiate the transfers and create a promise
@@ -111,6 +133,11 @@ class CrawlerController extends Controller
             // Force the pool of requests to complete.
             $promise->wait();
         }
+        $refreshTime = 600000;
+        echo '<span style="color: green">Tải Tin Thành Công Tải Lại Sau: ' . ($refreshTime / 1000) . ' Giây</span>';
+        $linkSuccesses = $this->linkSuccesses;
+        $linkErrors = $this->linkErrors;
+        return view('admin.rss', compact('refreshTime', 'linkSuccesses', 'linkErrors'));
     }
 
     public function getNews($menuHref, $website) {
@@ -127,37 +154,31 @@ class CrawlerController extends Controller
         $pubDate;
         $listTitleInserted = [];
         $requests = function () use ($menuHref) {
-            if($this->numberPage > 1) {
-                for ($i = 1; $i < $this->numberPage; $i++) {
-                    yield new GuzzleRequest('GET', $menuHref . $this->stringFirstPage . $i . $this->stringLastPage);
+            for ($i = 0; $i < $this->numberPage; $i++) {
+                if (empty($this->stringFirstPage)) {
+                    yield new GuzzleRequest('GET', $menuHref);
+                } else {
+                    yield new GuzzleRequest('GET', $menuHref . $this->stringFirstPage . ($i + 1) . $this->stringLastPage);
                 }
             }
         };
         $client = new GuzzleClient();
         $pool = new Pool($client, $requests(), [
             'concurrency' => $this->LoadLimit,
-            'fulfilled' => function ($response, $index) use ($website) {
+            'fulfilled' => function ($response, $index) use ($website, $menuHref) {
                 //menuHrefDocument = https://vnexpress.net/tin-tuc/thoi-su/page/1;
-                $menuHrefDocument = new Crawler();
-                $menuHrefDocument->addHtmlContent($response->getBody());
-                foreach ($website['detailWebsites'] as $key => $detailWebsite) {
-                    $items = $menuHrefDocument->filter($detailWebsite->containerTag);
-                    if ($items->count() > 0) {
-                        $limitOfOnePage = $website->limitOfOnePage;
-                        if ($website->limitOfOnePage == 0 || isset($website->limitOfOnePage) == false) {
-                            $limitOfOnePage = $items->count();
-                        }
-                        for ($i = 0; $i < $limitOfOnePage; $i++) {
-                            $item = $items->eq($i);
-                            $this->getItem($website, $detailWebsite, $item);
-                        }
-                    }
+                $documentUTF8 = $response->getBody();
+                if (stripos($response->getHeader('content-type')[0], 'iso-8859-1')) {
+                    $documentUTF8 = utf8_encode($response->getBody());
                 }
+                if (!empty($this->stringFirstPage)) {
+                    $menuHref = $menuHref . $this->stringFirstPage . ($index + 1) . $this->stringLastPage;
+                }
+                $this->getNewsInMenu($documentUTF8, $website, $menuHref);
             },
-            'rejected' => function ($reason, $index) use ($menuHref) {
+            'rejected' => function ($reason, $index) {
                 // this is delivered each failed request
-                // dd($reason);
-                echo '<span style="color:red">Không Thể Kết Nối Đến: ' . $reason->getRequest()->getUri()->getHost() . $reason->getRequest()->getUri()->getPath() . '</span><br>';
+                array_push($this->linkErrors, 'Không Thể Kết Nối Đến: ' . $reason->getRequest()->getUri());
                 $this->hasError = true;
             },
         ]);
@@ -165,6 +186,26 @@ class CrawlerController extends Controller
         $promise = $pool->promise();
         // Force the pool of requests to complete.
         $promise->wait();
+    }
+
+    private function getNewsInMenu($document, $website, $menuHref)
+    {
+        $menuHrefDocument = new Crawler();
+        $menuHrefDocument->addHtmlContent($document);
+        foreach ($website['detailWebsites'] as $key => $detailWebsite) {
+            $items = $menuHrefDocument->filter($detailWebsite->containerTag);
+            if ($items->count() > 0) {
+                $limitOfOnePage = $website->limitOfOnePage;
+                if ($website->limitOfOnePage == 0 || isset($website->limitOfOnePage) == false) {
+                    $limitOfOnePage = $items->count();
+                }
+                for ($i = 0; $i < $limitOfOnePage; $i++) {
+                    $item = $items->eq($i);
+                    $this->getItem($website, $detailWebsite, $item);
+                }
+            }
+        }
+        array_push($this->linkSuccesses, $menuHref);
     }
 
     private function getItem($website, $detailWebsite, $item)
@@ -189,7 +230,11 @@ class CrawlerController extends Controller
             if (!empty($detailWebsite->pubDateTag)) {
                 $pubDateNode = $item->filter($detailWebsite->pubDateTag);
                 if ($pubDateNode->count() > 0) {
-                    $pubDate = $pubDateNode->text();
+                    if (empty($detailWebsite->attr_pub_date)) {
+                        $pubDate = $pubDateNode->text();
+                    } else {
+                        $pubDate = $pubDateNode->attr($detailWebsite->attr_pub_date);
+                    }
                 }
             }
             //save to db
@@ -200,11 +245,17 @@ class CrawlerController extends Controller
     private function saveNewsToDB($title, $link, $description, $pubDate, $website)
     {
         //local
-        $inserted = in_array($link, $this->listLinkInserted);
+        if(!$this->startWithHtml($link)) {
+            $startLink = parse_url($this->domainName, PHP_URL_SCHEME) . '://' . parse_url($this->domainName, PHP_URL_HOST);
+            $endLink = '/' . $link;
+            $link = $startLink . str_replace('//', '/', $endLink);
+        }
+        $compareLinkInserted = str_replace('/', '', $link);
+        $inserted = in_array($compareLinkInserted, $this->listLinkInserted);
         if ($inserted == false) {
             $available = false;
             foreach ($this->contents as $key => $item) {
-                if ($link == $item->link) {
+                if ($compareLinkInserted == str_replace('/', '', $item->link)) {
                     $available = true;
                     break;
                 }
@@ -248,7 +299,7 @@ class CrawlerController extends Controller
                         // */convert datetime
                         $content->pubDate = $pubDateTemp;
                         $content->save();
-                        array_push($this->listLinkInserted, $link);
+                        array_push($this->listLinkInserted, $compareLinkInserted);
                     }
                     if ($category_id == 1) {
                         break;

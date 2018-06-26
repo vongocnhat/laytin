@@ -15,11 +15,11 @@
 </div>  
 <div class="form-group">
   {{ Form::label('menuTag','MenuTag ')}} 
-  {{ Form::text('menuTag',null,['class'=>'form-control', 'required' => 'required'])}}
+  {{ Form::text('menuTag',null,['class'=>'form-control'])}}
 </div>
 <div class="form-group">
   {{form::label('numberPage','NumberPage')}}
-  {{form::number('numberPage', 5,['class'=>'form-control', 'required' => 'required'])}}
+  {{form::number('numberPage', 2,['class'=>'form-control', 'required' => 'required'])}}
 </div>
 <div class="form-group">
   {{form::label('limitOfOnePage','LimitOfOnePage:')}}
@@ -27,7 +27,7 @@
 </div>
 <div class="form-group">
   {{form::label('stringFirstPage','StringFirstPage:')}}
-  {{form::text('stringFirstPage',null,['class'=>'form-control', 'required' => 'required'])}}
+  {{form::text('stringFirstPage',null,['class'=>'form-control'])}}
 </div>
 <div class="form-group">
   {{form::label('stringLastPage','StringLastPage:')}}

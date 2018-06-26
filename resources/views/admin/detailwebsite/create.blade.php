@@ -10,7 +10,7 @@
 {!! Form::open(['route' => 'detailwebsite.store', 'method' => 'post', 'class' => 'col-12']) !!}
   <div class="form-group">
     {{ Form::label(null, 'DomainName') }}
-    {{ Form::select('website_id', $domainNames, null, ['class' => 'form-control', 'placeholder' => 'Chọn DomainName', 'required']) }}
+    {{ Form::select('website_id', $domainNames, Request::get('website_id'), ['class' => 'form-control', 'placeholder' => 'Chọn DomainName', 'required']) }}
   </div>
   <div class="form-group">
     {{ Form::label(null, 'ContainerTag: ') }}
@@ -27,6 +27,10 @@
   <div class="form-group">
     {{ Form::label(null, 'PubDateTag') }}
     {{ Form::text('pubDateTag', null, ['class' => 'form-control']) }}
+  </div>
+  <div class="form-group">
+    {{ Form::label(null, 'Thuộc Tính Trong Thẻ PubDateTag') }}
+    {{ Form::text('attr_pub_date', null, ['class' => 'form-control']) }}
   </div>
   <div class="form-group" >
     {{form::label('Active','Active:')}}

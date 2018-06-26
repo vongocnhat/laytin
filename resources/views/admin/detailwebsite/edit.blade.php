@@ -28,6 +28,10 @@
     {{ Form::label(null, 'PubDateTag') }}
     {{ Form::text('pubDateTag', null, ['class' => 'form-control']) }}
   </div>
+  <div class="form-group">
+    {{ Form::label(null, 'Thuộc Tính Trong Thẻ PubDateTag') }}
+    {{ Form::text('attr_pub_date', null, ['class' => 'form-control']) }}
+  </div>
   <div class="form-group" >
     {{form::label('Active','Active:')}}
     <div class="form-check form-check-inline">
